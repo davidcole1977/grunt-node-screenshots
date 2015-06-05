@@ -22,6 +22,7 @@ describe('pointless test', function () {
 
     var diff = resemble('google.png').compareTo('google-2.png').ignoreAntialiasing().onComplete(function (diffData) {
       diffData.getDiffImage().pack().pipe(fs.createWriteStream('diff.png'));
+      done();
 
       // more info about writing the data as a png file here
       // http://stackoverflow.com/questions/28746451/writing-buffer-response-from-resemble-js-to-file
