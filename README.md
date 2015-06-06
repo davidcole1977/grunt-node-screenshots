@@ -19,4 +19,4 @@ Following a wee spot of investigation, the plan is:
 ### Thoughts on solution
 * webdriverIO with webdriverCSS plugin is worth a look. It'll likely be stable enough, and seems to be able to provide the ability to take a screenshot based on HTML selector, BUT...
 * the code could end up being a callback spaghetti. Could promises help?
-* WebdriverIS/CSS has screendiffing capability, but will this provide the reporting needed? Can we use webdriverIO with Mocha?
+* WebdriverIO/CSS has screendiffing capability, but will this provide the reporting needed? Can we use webdriverIO with Mocha? will chai-as-promised help?
