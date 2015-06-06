@@ -1,28 +1,28 @@
 {
-  "viewports": {
-    "large": {
+  "viewports": [
+    {
       "width": "1280",
       "height": "1024"
     },
-    "small": {
+    {
       "width": "320",
       "height": "480"
     }
-  },
+  ],
   "pages": {
-    "home": {
+    "google": {
       "url": "http://www.google.com",
-      "panels": [
-        "id-1",
-        "id-2"
-      ]
+      "selectors": {
+        "logo": "#hplogo",
+        "buttons": ".jsb"
+      }
     },
-    "landing": {
+    "bbc": {
       "url": "http://www.bbc.com",
-      "panels": [
-        "id-3",
-        "id-4"
-      ]
+      "selectors": {
+        "logo": "#hplogo",
+        "buttons": ".jsb"
+      }
     }
   }
 }
