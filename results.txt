@@ -3,7 +3,7 @@
 [0m  compare baseline screenshots to latest screenshots[0m
 [0m    bbc_1280x1024_buttons.png[0m
 [2K[0G    [32m  ✓[0m[90m has a matching "latest" screenshot file[0m
-[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[31m (1052ms)[0m
+[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[31m (1023ms)[0m
 [0m    bbc_1280x1024_logo.png[0m
 [2K[0G    [31m  1) has a matching "latest" screenshot file[0m
 [2K[0G    [31m  2) matches the latest version of the screenshot[0m
@@ -12,16 +12,16 @@
 [2K[0G    [31m  3) matches the latest version of the screenshot[0m
 [0m    bbc_320x480_logo.png[0m
 [2K[0G    [32m  ✓[0m[90m has a matching "latest" screenshot file[0m
-[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[31m (343ms)[0m
+[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[31m (335ms)[0m
 [0m    google_1280x1024_buttons.png[0m
 [2K[0G    [32m  ✓[0m[90m has a matching "latest" screenshot file[0m
-[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[31m (189ms)[0m
+[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[31m (180ms)[0m
 [0m    google_1280x1024_logo.png[0m
 [2K[0G    [32m  ✓[0m[90m has a matching "latest" screenshot file[0m
 [2K[0G    [31m  4) matches the latest version of the screenshot[0m
 [0m    google_320x480_buttons.png[0m
 [2K[0G    [32m  ✓[0m[90m has a matching "latest" screenshot file[0m
-[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[33m (42ms)[0m
+[2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m[33m (43ms)[0m
 [0m    google_320x480_logo.png[0m
 [2K[0G    [32m  ✓[0m[90m has a matching "latest" screenshot file[0m
 [2K[0G    [32m  ✓[0m[90m matches the latest version of the screenshot[0m

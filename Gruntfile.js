@@ -90,6 +90,4 @@ module.exports = function(grunt) {
     }
   });
  
-  grunt.registerTask('default', ['baseline-shot', 'latest-shot', 'mochaTest']);
- 
 };
