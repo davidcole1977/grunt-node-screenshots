@@ -6,11 +6,13 @@
   "dependencies": {
     "chai": "^3.0.0",
     "express": "^4.12.4",
+    "gm": "^1.18.1",
     "grunt": "^0.4.5",
     "grunt-mocha-test": "^0.12.7",
+    "grunt-selenium-webdriver": "^0.2.451",
+    "lodash": "^3.9.3",
     "mocha": "^2.2.5",
-    "node-resemble-js": "0.0.4",
-    "webshot": "git://github.com/brenden/node-webshot"
+    "webdriverio": "^2.4.5"
   },
   "devDependencies": {},
   "scripts": {

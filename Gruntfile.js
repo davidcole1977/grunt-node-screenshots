@@ -1,84 +1,101 @@
 module.exports = function(grunt) {
 
   grunt.registerMultiTask('takescreens', function () {
-    var options = this.options({
+    var _ = require('lodash'),
+        gm = require('gm'),
+        options = this.options({
           screenshotDir: 'screenshots',
           configFile: 'feature-shot-config.json'
         }),
-        webshot = require('webshot'),
-        finishTask = this.async(),
+        webdriverio = require('webdriverio'),
+        webdriverOptions = {
+          desiredCapabilities: {
+            browserName: 'phantomjs'
+          },
+          logLevel: 'silent'
+        },
+        client,
+        done = this.async(),
         screenshotConfig = grunt.file.readJSON(options.configFile),
         pages = screenshotConfig.pages,
-        viewports = screenshotConfig.viewports,
-        pageNames = Object.keys(screenshotConfig.pages),
-        totalScreenshots = 0,
-        screenshotCount = 0;
+        viewports = screenshotConfig.viewports;
 
-    // determine total number of screenshots so we can tell when we're finished
-    totalScreenshots = pageNames.length * viewports.length;
+    function takeScreenshot(viewport, page, selectors, callback) {
+      client.getViewportSize(function(err, size) {
+        console.log(size);
+      });
 
-    pageNames.forEach(function (pageName) {
-      totalScreenshots += pages[pageName].selectors.length;
-    });
+      client.saveScreenshot(options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '.png', function () {
+        selectors.forEach(function (selector) {
+          console.log('takeScreenshot: ' + page.name + ', ' + viewport.width + 'x' + viewport.height + ', ' + selector.name);
+        });   
 
-    // loop through selectors, viewports & IDs for each page and save a screenshot
-    pageNames.forEach(function (pageName) {
+        callback();
+      });
+    }
 
-      screenshotConfig.viewports.forEach(function (viewport) {
-        var selectors = pages[pageName].selectors,
-            viewportString = viewport.width + 'x' + viewport.height;
+    function loopViewports (viewports, page, callback) {
+      var viewport;
 
-        Object.keys(selectors).forEach(function (selectorName) {
-          var screenshotPath = options.screenshotDir + '/' + pageName + '_' + viewportString + '_' + selectorName + '.png',
-              webshotOptions = {
-                windowSize: {
-                  width: viewport.width,
-                  height: viewport.height
-                },
-                shotSize: {
-                  width: 'window',
-                  height: 'all'
-                },
-                defaultWhiteBackground: true
-              };
+      if (viewports.length === 0) {
+        callback();
+      } else {
+        viewport = viewports.shift();
 
-          webshot(pages[pageName].url, screenshotPath, webshotOptions, function (error) {
-            if (error) {
-              grunt.log.error(error);
-            } else {
-              grunt.log.ok('Screenshot saved at ' + screenshotPath);
-            }
-
-            screenshotCount += 1;
-            if (screenshotCount === totalScreenshots) {
-              finishTask();
-            }
+        client.setViewportSize({ width: viewport.width, height: viewport.height }, false, function () {
+          takeScreenshot(viewport, page, _.cloneDeep(page.selectors), function () {
+            loopViewports(viewports, page, callback);
           });
         });
-      });
-    });
+      }
+    }
+
+    function loopScreens (pages, callback) {
+      var page;
+
+      if (pages.length === 0) {
+        callback();
+      } else {
+        page = pages.shift();
+
+        client.url(page.url, function () {
+          loopViewports(_.cloneDeep(viewports), page, function () {
+            loopScreens(pages, callback);
+          });
+        });
+      }
+    }
+
+    // initialise webdriver
+    client = webdriverio.remote(webdriverOptions);
+    client.init();
+
+    // initialise the screen capture
+    loopScreens(_.cloneDeep(pages), done);
+
   });
  
   // Add the grunt-mocha-test tasks. 
   grunt.loadNpmTasks('grunt-mocha-test');
+  grunt.loadNpmTasks('grunt-selenium-webdriver');
  
   grunt.initConfig({
     takescreens: {
       baseline: {
         options: {
-          screenshotDir: 'reporting/screenshots/baseline',
+          screenshotDir: 'reporting/screenshots/baseline-new',
           configFile: 'feature-shot-config.json'
         }
       },
       latest: {
         options: {
-          screenshotDir: 'reporting/screenshots/latest',
+          screenshotDir: 'reporting/screenshots/latest-new',
           configFile: 'feature-shot-config.json'
         }
       }
     },
     mochaTest: {
-      test: {
+      'screen-diff': {
         options: {
           reporter: 'spec',
           captureFile: 'results.txt', // Optionally capture the reporter output to a file 
@@ -89,5 +106,7 @@ module.exports = function(grunt) {
       }
     }
   });
+
+  grunt.registerTask('baseline-screens', ['selenium_phantom_hub', 'takescreens:baseline', 'selenium_stop']);
  
 };
