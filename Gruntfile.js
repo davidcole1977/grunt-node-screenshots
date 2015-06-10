@@ -21,10 +21,6 @@ module.exports = function(grunt) {
         viewports = screenshotConfig.viewports;
 
     function takeScreenshot(viewport, page, selectors, callback) {
-      client.getViewportSize(function(err, size) {
-        console.log(size);
-      });
-
       client.saveScreenshot(options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '.png', function () {
         selectors.forEach(function (selector) {
           console.log('takeScreenshot: ' + page.name + ', ' + viewport.width + 'x' + viewport.height + ', ' + selector.name);
@@ -42,7 +38,7 @@ module.exports = function(grunt) {
       } else {
         viewport = viewports.shift();
 
-        client.setViewportSize({ width: viewport.width, height: viewport.height }, false, function () {
+        client.setViewportSize({ width: parseInt(viewport.width, 10), height: parseInt(viewport.height, 10) }, function () {
           takeScreenshot(viewport, page, _.cloneDeep(page.selectors), function () {
             loopViewports(viewports, page, callback);
           });
