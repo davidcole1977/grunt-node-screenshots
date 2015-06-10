@@ -94,6 +94,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-selenium-webdriver');
   grunt.loadNpmTasks('grunt-mkdir');
   grunt.loadNpmTasks('grunt-contrib-clean');
+
+  // task timer
+  require('time-grunt')(grunt);
  
   grunt.initConfig({
     mkdir: {
@@ -142,7 +145,7 @@ module.exports = function(grunt) {
       'screen-diff': {
         options: {
           reporter: 'spec',
-          captureFile: 'resporting/screenshots/results.txt', // Optionally capture the reporter output to a file 
+          captureFile: 'reporting/screenshots/results.txt', // Optionally capture the reporter output to a file 
           quiet: false, // Optionally suppress output to standard out (defaults to false) 
           clearRequireCache: false // Optionally clear the require cache before running tests (defaults to false) 
         },
