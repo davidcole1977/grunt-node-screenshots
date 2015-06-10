@@ -21,9 +21,27 @@ module.exports = function(grunt) {
         viewports = screenshotConfig.viewports;
 
     function takeScreenshot(viewport, page, selectors, callback) {
-      client.saveScreenshot(options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '.png', function () {
+      var baseFileName = options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height,
+          fullShotFileName = baseFileName + '_whole-page.png';
+
+      client.saveScreenshot(fullShotFileName, function () {
+        grunt.log.ok('Saved screenshot: ' + fullShotFileName);
+
+        // TODO: separate cropping into separate function with callback
         selectors.forEach(function (selector) {
-          console.log('takeScreenshot: ' + page.name + ', ' + viewport.width + 'x' + viewport.height + ', ' + selector.name);
+          var selectorFileName = baseFileName + '_' + selector.name + '.png';
+
+          client.getElementSize(selector.selector, function(error, elementSize) {
+            
+            client.getLocation(selector.selector, function(error, elementLocation) {
+              gm(fullShotFileName).crop(elementSize.width, elementSize.height, elementLocation.x, elementLocation.y).write(selectorFileName, function (error) {
+                grunt.log.ok('Saved screenshot: ' + selectorFileName)
+              });
+
+            });
+
+          });
+          
         });   
 
         callback();
@@ -74,18 +92,48 @@ module.exports = function(grunt) {
   // Add the grunt-mocha-test tasks. 
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-selenium-webdriver');
+  grunt.loadNpmTasks('grunt-mkdir');
+  grunt.loadNpmTasks('grunt-contrib-clean');
  
   grunt.initConfig({
+    mkdir: {
+     'baseline-screens': {
+        options: {
+          create: ['reporting/screenshots/baseline']
+        }
+      },
+      'latest-screens': {
+        options: {
+          create: ['reporting/screenshots/latest']
+        }
+      },
+      'diff-screens': {
+        options: {
+          create: ['reporting/screenshots/diffs']
+        }
+      }
+    },
+    clean: {
+      'baseline-screens': {
+        src: ['reporting/screenshots/baseline']
+      },
+      'latest-screens': {
+        src: ['reporting/screenshots/latest']
+      },
+      'diff-screens': {
+        src: ['reporting/screenshots/diffs']
+      }
+    },
     takescreens: {
       baseline: {
         options: {
-          screenshotDir: 'reporting/screenshots/baseline-new',
+          screenshotDir: 'reporting/screenshots/baseline',
           configFile: 'feature-shot-config.json'
         }
       },
       latest: {
         options: {
-          screenshotDir: 'reporting/screenshots/latest-new',
+          screenshotDir: 'reporting/screenshots/latest',
           configFile: 'feature-shot-config.json'
         }
       }
@@ -94,7 +142,7 @@ module.exports = function(grunt) {
       'screen-diff': {
         options: {
           reporter: 'spec',
-          captureFile: 'results.txt', // Optionally capture the reporter output to a file 
+          captureFile: 'resporting/screenshots/results.txt', // Optionally capture the reporter output to a file 
           quiet: false, // Optionally suppress output to standard out (defaults to false) 
           clearRequireCache: false // Optionally clear the require cache before running tests (defaults to false) 
         },
@@ -103,6 +151,26 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('baseline-screens', ['selenium_phantom_hub', 'takescreens:baseline', 'selenium_stop']);
+  grunt.registerTask('baseline-screens', [
+    'clean:baseline-screens',
+    'mkdir:baseline-screens',
+    'selenium_phantom_hub',
+    'takescreens:baseline',
+    'selenium_stop'
+  ]);
+
+  grunt.registerTask('latest-screens', [
+    'clean:latest-screens',
+    'mkdir:latest-screens',
+    'selenium_phantom_hub',
+    'takescreens:latest',
+    'selenium_stop'
+  ]);
+
+  grunt.registerTask('screen-diff', [
+    'clean:diff-screens',
+    'mkdir:diff-screens',
+    'mochaTest:screen-diff'
+  ]);
  
 };

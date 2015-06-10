@@ -4,6 +4,13 @@ The aim is to put together a simple grunt/node-based proof of concept that will 
 
 This is inspired by difficulties in installing Phantom CSS, combined with a desire to perform the assertions using a test runner of our choice, allowing better CI server support.
 
+Current state:
+
+* Proof of concept of taking screenshots of specific regions of web pages at various viewport sizes using webdriverio and gm (graphics magick)
+* Proof of concept of testing for differences between baseline screenshots and latest screenshots using mocha and gm (graphics magick) and saving a diff image
+* LOTS of known issues that will be resolved (definitely not ready for real world use yet)
+* That said, it clearly proves the concept and seems set to be a robust and performant solution
+
 The plan is:
 
 * JSON file contains pages config details: friendly names & URLs of pages to be captured & ID(s) of page regions to capture, & viewport sizes

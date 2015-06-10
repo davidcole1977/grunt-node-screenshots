@@ -39,7 +39,18 @@ describe('compare baseline screenshots to latest screenshots', function () {
           }
 
           if (!imagesAreEqual) {
-            throw new Error('baseline screenshot is ' + Math.round(imageDiffAmount * 100 * 100) / 100  + '% different from latest screenshot');
+            var diffSaveOptions = {
+              file: 'reporting/screenshots/diffs/' + fileName
+            };
+
+            gm.compare(baselineDir + '/' + fileName, latestDir + '/' + fileName, diffSaveOptions, function (error) {
+              if (error) {
+                console.log(error);
+              }
+
+              throw new Error('baseline screenshot is ' + Math.round(imageDiffAmount * 100 * 100) / 100  + '% different from latest screenshot');
+            });
+            
           } else {
             done();
           }

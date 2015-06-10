@@ -20,11 +20,11 @@
       "selectors": [
         {
           "name": "logo",
-          "selector": "#hplogo"
+          "selector": ".tb-logo"
         },
         {
-          "name": "buttons",
-          "selector": ".jsb"
+          "name": "hero",
+          "selector": ".homepage-hero"
         }
       ]
     },
@@ -33,12 +33,12 @@
       "url": "http://www.tescobank.com/bank/",
       "selectors": [
         {
-          "name": "logo",
-          "selector": "#hplogo"
+          "name": "signpost",
+          "selector": ".signpost"
         },
         {
-          "name": "buttons",
-          "selector": ".jsb"
+          "name": "social-icons",
+          "selector": ".social-icons"
         }
       ]
     },
@@ -47,12 +47,12 @@
       "url": "http://www.tescobank.com/credit-cards/purchases/index.html",
       "selectors": [
         {
-          "name": "logo",
-          "selector": "#hplogo"
+          "name": "benefits",
+          "selector": ".benefits"
         },
         {
-          "name": "buttons",
-          "selector": ".jsb"
+          "name": "faq-list",
+          "selector": ".faq-list"
         }
       ]
     },
@@ -61,12 +61,12 @@
       "url": "http://www.tescobank.com/car-insurance/standard/apply.html",
       "selectors": [
         {
-          "name": "logo",
-          "selector": "#hplogo"
+          "name": "eligibility",
+          "selector": ".eligibility"
         },
         {
-          "name": "buttons",
-          "selector": ".jsb"
+          "name": "primary-footer",
+          "selector": ".primary-footer"
         }
       ]
     }
