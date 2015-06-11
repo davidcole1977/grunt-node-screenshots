@@ -20,9 +20,17 @@ module.exports = function(grunt) {
         pages = screenshotConfig.pages,
         viewports = screenshotConfig.viewports;
 
-    function screenshotPageRegion (selector, baseFileName, callback) {
-      var selectorFileName = baseFileName + '_' + selector.name + '.png',
-          fullShotFileName = baseFileName + '_whole-page.png';
+    function getCroppedShotFileName (page, viewport, selector) {
+      return options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '_' + selector.name + '.png';
+    }
+
+    function getFullShotFileName (page, viewport) {
+      return options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '.png';
+    }
+
+    function cropScreenshot (page, viewport, selector, callback) {
+      var selectorFileName = getCroppedShotFileName(page, viewport, selector),
+          fullShotFileName = getFullShotFileName(page, viewport);
 
       client.getElementSize(selector.selector, function(error, elementSize) {
         
@@ -38,18 +46,17 @@ module.exports = function(grunt) {
 
     }
 
-    function screenshotPage (viewport, page, selectors, callback) {
-      var baseFileName = options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height,
-          fullShotFileName = baseFileName + '_whole-page.png';
+    function screenshotPage (page, viewport, selectors, callback) {
+      var fullShotFileName = getFullShotFileName(page, viewport);
 
       client.saveScreenshot(fullShotFileName, function () {
         grunt.log.ok('Saved screenshot: ' + fullShotFileName);
 
-        loopSelectors(_.cloneDeep(selectors), baseFileName, callback);
+        loopSelectors(page, viewport, _.cloneDeep(selectors), callback);
       });
     }
 
-    function loopSelectors (selectors, baseFileName, callback) {
+    function loopSelectors (page, viewport, selectors, callback) {
       var selector;
 
       if (selectors.length === 0) {
@@ -57,13 +64,13 @@ module.exports = function(grunt) {
       } else {
         selector = selectors.shift();
 
-        screenshotPageRegion(selector, baseFileName, function () {
-          loopSelectors(selectors, baseFileName, callback);
+        cropScreenshot(page, viewport, selector, function () {
+          loopSelectors(page, viewport, selectors, callback);
         });
       }
     }
 
-    function loopViewports (viewports, page, callback) {
+    function loopViewports (page, viewports, callback) {
       var viewport;
 
       if (viewports.length === 0) {
@@ -72,8 +79,8 @@ module.exports = function(grunt) {
         viewport = viewports.shift();
 
         client.setViewportSize({ width: parseInt(viewport.width, 10), height: parseInt(viewport.height, 10) }, function () {
-          screenshotPage(viewport, page, page.selectors, function () {
-            loopViewports(viewports, page, callback);
+          screenshotPage(page, viewport, page.selectors, function () {
+            loopViewports(page, viewports, callback);
           });
         });
       }
@@ -88,7 +95,7 @@ module.exports = function(grunt) {
         page = pages.shift();
 
         client.url(page.url, function () {
-          loopViewports(_.cloneDeep(viewports), page, function () {
+          loopViewports(page, _.cloneDeep(viewports), function () {
             loopScreens(pages, callback);
           });
         });
