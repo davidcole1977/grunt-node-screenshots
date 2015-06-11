@@ -20,17 +20,42 @@ module.exports = function(grunt) {
         pages = screenshotConfig.pages,
         viewports = screenshotConfig.viewports;
 
-    function getCroppedShotFileName (page, viewport, selector) {
-      return options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '_' + selector.name + '.png';
+    // alter pages object so that it contains all information we need at each level of depth;
+    // page > viewport > selector
+    pages.forEach(function (page) {
+      page.viewports = _.cloneDeep(viewports);
+
+      page.viewports.forEach(function (viewport) {
+        viewport.parentPage = {
+          name: page.name
+        }
+        viewport.selectors = _.cloneDeep(page.selectors);
+
+        viewport.selectors.forEach(function (selector) {
+          selector.parentPage = {
+            name: page.name
+          }
+          selector.parentViewport = {
+            width: viewport.width,
+            height: viewport.height
+          }
+        })
+      });
+
+      delete page.selectors;
+    });
+
+    function getCroppedShotFileName (pageName, viewport, selectorName) {
+      return options.screenshotDir + '/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_' + selectorName + '.png';
     }
 
-    function getFullShotFileName (page, viewport) {
-      return options.screenshotDir + '/' + page.name + '_' + viewport.width + 'x' + viewport.height + '.png';
+    function getFullShotFileName (pageName, viewport) {
+      return options.screenshotDir + '/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_full-page.png';
     }
 
-    function cropScreenshot (page, viewport, selector, callback) {
-      var selectorFileName = getCroppedShotFileName(page, viewport, selector),
-          fullShotFileName = getFullShotFileName(page, viewport);
+    function cropScreenshot (selector, callback) {
+      var selectorFileName = getCroppedShotFileName(selector.parentPage.name, selector.parentViewport, selector.name),
+          fullShotFileName = getFullShotFileName(selector.parentPage.name, selector.parentViewport);
 
       client.getElementSize(selector.selector, function(error, elementSize) {
         
@@ -39,24 +64,23 @@ module.exports = function(grunt) {
             grunt.log.ok('Saved screenshot: ' + selectorFileName);
             callback();
           });
-
         });
 
       });  
 
     }
 
-    function screenshotPage (page, viewport, selectors, callback) {
-      var fullShotFileName = getFullShotFileName(page, viewport);
+    function screenshotPage (viewport, callback) {
+      var fullShotFileName = getFullShotFileName(viewport.parentPage.name, viewport);
 
       client.saveScreenshot(fullShotFileName, function () {
         grunt.log.ok('Saved screenshot: ' + fullShotFileName);
 
-        loopSelectors(page, viewport, _.cloneDeep(selectors), callback);
+        loopSelectors(viewport.selectors, callback);
       });
     }
 
-    function loopSelectors (page, viewport, selectors, callback) {
+    function loopSelectors (selectors, callback) {
       var selector;
 
       if (selectors.length === 0) {
@@ -64,13 +88,13 @@ module.exports = function(grunt) {
       } else {
         selector = selectors.shift();
 
-        cropScreenshot(page, viewport, selector, function () {
-          loopSelectors(page, viewport, selectors, callback);
+        cropScreenshot(selector, function () {
+          loopSelectors(selectors, callback);
         });
       }
     }
 
-    function loopViewports (page, viewports, callback) {
+    function loopViewports (viewports, callback) {
       var viewport;
 
       if (viewports.length === 0) {
@@ -79,8 +103,8 @@ module.exports = function(grunt) {
         viewport = viewports.shift();
 
         client.setViewportSize({ width: parseInt(viewport.width, 10), height: parseInt(viewport.height, 10) }, function () {
-          screenshotPage(page, viewport, page.selectors, function () {
-            loopViewports(page, viewports, callback);
+          screenshotPage(viewport, function () {
+            loopViewports(viewports, callback);
           });
         });
       }
@@ -95,7 +119,7 @@ module.exports = function(grunt) {
         page = pages.shift();
 
         client.url(page.url, function () {
-          loopViewports(page, _.cloneDeep(viewports), function () {
+          loopViewports(page.viewports, function () {
             loopScreens(pages, callback);
           });
         });
