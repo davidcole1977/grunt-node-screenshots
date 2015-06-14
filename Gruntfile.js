@@ -129,20 +129,6 @@ module.exports = function(grunt) {
         }
       }
     },
-    testLooper: {
-      baseline: {
-        options: {
-          screenshotDir: 'reporting/screenshots/baseline',
-          configFile: 'feature-shot-config.json'
-        }
-      },
-      latest: {
-        options: {
-          screenshotDir: 'reporting/screenshots/latest',
-          configFile: 'feature-shot-config.json'
-        }
-      }
-    },
     mochaTest: {
       'screen-diff': {
         options: {
