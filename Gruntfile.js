@@ -1,8 +1,9 @@
 module.exports = function(grunt) {
 
   grunt.registerMultiTask('takescreens', function () {
-    var _ = require('lodash'),
+    var loop = require('./looper').loop,
         gm = require('gm'),
+        finishGruntTask = this.async(),
         options = this.options({
           screenshotDir: 'screenshots',
           configFile: 'feature-shot-config.json'
@@ -15,38 +16,33 @@ module.exports = function(grunt) {
           logLevel: 'silent'
         },
         client,
-        done = this.async(),
         screenshotConfig = grunt.file.readJSON(options.configFile),
         pages = screenshotConfig.pages,
         viewports = screenshotConfig.viewports;
 
-    function loopWithCallback (array, action, finished) {
-      var entry;
-
-      if (array.length === 0) {
-        finished();
-      } else {
-        entry = array[0];
-
-        action(entry, function () {
-          loopWithCallback(array.slice(1), action, finished)
-        });
-      }
+    function getFullShotFileName (pageName, viewport) {
+      return options.screenshotDir + '/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_full-page.png';
     }
 
     function getCroppedShotFileName (pageName, viewport, selectorName) {
       return options.screenshotDir + '/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_' + selectorName + '.png';
     }
 
-    function getFullShotFileName (pageName, viewport) {
-      return options.screenshotDir + '/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_full-page.png';
+    function takeScreenshot (fileName, callback) {
+      client.saveScreenshot(fileName, function (error) {
+        grunt.log.ok('Saved screenshot: ' + fileName);
+        callback();
+      });
+
     }
 
-    function cropScreenshot (originalFileName, croppedFileName, selector, callback) {
-      client.getElementSize(selector.selector, function(error, elementSize) {
+    function cropScreenshot (selector, data, callback) {
+      var croppedFileName = getCroppedShotFileName(data.page.name, data.viewport, selector.name);
+
+      client.getElementSize(selector.selector, function (error, elementSize) {
         
-        client.getLocation(selector.selector, function(error, elementLocation) {
-          gm(originalFileName).crop(elementSize.width, elementSize.height, elementLocation.x, elementLocation.y).write(croppedFileName, function (error) {
+        client.getLocation(selector.selector, function (error, elementLocation) {
+          gm(data.fileName).crop(elementSize.width, elementSize.height, elementLocation.x, elementLocation.y).write(croppedFileName, function (error) {
             grunt.log.ok('Saved screenshot: ' + croppedFileName);
             callback();
           });
@@ -56,50 +52,21 @@ module.exports = function(grunt) {
 
     }
 
-    function loopSelectors (page, viewport, callback) {
-      loopWithCallback(page.selectors, function (selector, done) {
-        var selectorFileName = getCroppedShotFileName(page.name, viewport, selector.name),
-            fullShotFileName = getFullShotFileName(page.name, viewport);
+    function setViewport (viewport, page, callback) {
+      var fileName = getFullShotFileName(page.name, viewport);
 
-        cropScreenshot(fullShotFileName, selectorFileName, selector, function () {
-          done();
+      client.setViewportSize({ width: parseInt(viewport.width, 10), height: parseInt(viewport.height, 10) }, function (error) {
+        takeScreenshot(fileName, function () {
+          loop(page.selectors).andDo(cropScreenshot).withData({fileName: fileName, page: page, viewport: viewport}).andWhenFinished(callback).start();
         });
-
-      }, callback);
-    }
-
-    function screenshotPage (page, viewport, callback) {
-      var fullShotFileName = getFullShotFileName(page.name, viewport);
-
-      client.saveScreenshot(fullShotFileName, function () {
-        grunt.log.ok('Saved screenshot: ' + fullShotFileName);
-
-        loopSelectors(page, viewport, callback);
       });
-    }
-    
-    function setViewports (page, viewports, callback) {
-      loopWithCallback(viewports, function (viewport, done) {
 
-        client.setViewportSize({ width: parseInt(viewport.width, 10), height: parseInt(viewport.height, 10) }, function () {
-          screenshotPage(page, viewport, function () {
-            done();
-          });
-        });
-
-      }, callback);
     }
 
-    function startScreenCapture (pages, callback) {
-      loopWithCallback(pages, function (page, done) {
-
-        client.url(page.url, function () {
-          setViewports(page, viewports, function () {
-            done();
-          });
-        });
-
-      }, callback);
+    function setURL (page, viewports, callback) {
+      client.url(page.url, function (error) {
+        loop(viewports).andDo(setViewport).withData(page).andWhenFinished(callback).start();
+      });
     }
 
     // initialise webdriver
@@ -107,7 +74,7 @@ module.exports = function(grunt) {
     client.init();
 
     // initialise the screen capture
-    startScreenCapture(pages, done);
+    loop(pages).andDo(setURL).withData(viewports).andWhenFinished(finishGruntTask).start();
   });
  
   // Add the grunt-mocha-test tasks. 
@@ -149,6 +116,20 @@ module.exports = function(grunt) {
       }
     },
     takescreens: {
+      baseline: {
+        options: {
+          screenshotDir: 'reporting/screenshots/baseline',
+          configFile: 'feature-shot-config.json'
+        }
+      },
+      latest: {
+        options: {
+          screenshotDir: 'reporting/screenshots/latest',
+          configFile: 'feature-shot-config.json'
+        }
+      }
+    },
+    testLooper: {
       baseline: {
         options: {
           screenshotDir: 'reporting/screenshots/baseline',
