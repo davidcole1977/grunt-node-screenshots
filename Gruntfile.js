@@ -6,7 +6,7 @@ module.exports = function(grunt) {
         finishGruntTask = this.async(),
         options = this.options({
           screenshotDir: 'screenshots',
-          configFile: 'feature-shot-config.json'
+          configFile: 'feature-shot-config.js'
         }),
         webdriverio = require('webdriverio'),
         webdriverOptions = {
@@ -16,7 +16,7 @@ module.exports = function(grunt) {
           logLevel: 'silent'
         },
         client,
-        screenshotConfig = grunt.file.readJSON(options.configFile),
+        screenshotConfig = require('./feature-shot-config'),
         pages = screenshotConfig.pages,
         viewports = screenshotConfig.viewports;
 
@@ -54,10 +54,20 @@ module.exports = function(grunt) {
     function setViewport (viewport, page, callback) {
       var fileName = getFullShotFileName(page.name, viewport);
 
-      client.setViewportSize({ width: parseInt(viewport.width, 10), height: parseInt(viewport.height, 10) }, function (error) {
+      var takeScreenshotThenLoopSelectors = function () {
         takeScreenshot(fileName, function () {
           loop(page.selectors).andDo(cropScreenshot).withData({fileName: fileName, page: page, viewport: viewport}).andWhenFinished(callback).start();
         });
+      };
+
+      client.setViewportSize({ width: viewport.width, height: viewport.height }, function (error) {
+        if (typeof page.action === 'function') {
+          page.action(client, {page: page, viewport: viewport}, function (error) {
+            takeScreenshotThenLoopSelectors();
+          });
+        } else {
+           takeScreenshotThenLoopSelectors();
+        }
       });
 
     }
@@ -118,13 +128,13 @@ module.exports = function(grunt) {
       baseline: {
         options: {
           screenshotDir: 'reporting/screenshots/baseline',
-          configFile: 'feature-shot-config.json'
+          configFile: 'feature-shot-config.js'
         }
       },
       latest: {
         options: {
           screenshotDir: 'reporting/screenshots/latest',
-          configFile: 'feature-shot-config.json'
+          configFile: 'feature-shot-config.js'
         }
       }
     },
