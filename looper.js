@@ -1,5 +1,5 @@
 function Looper (array) {
-  this.loopArray = array;
+  this.loopArray = array || [];
   this.data = null;
   this.finishedAction = function () {
     console.log('Looper finished action has not been specified');

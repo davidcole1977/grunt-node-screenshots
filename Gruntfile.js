@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         viewports = screenshotConfig.viewports;
 
     function getFullShotFileName (pageName, viewport) {
-      return options.screenshotDir + '/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_full-page.png';
+      return options.screenshotDir + '/originals/' + pageName + '_' + viewport.width + 'x' + viewport.height + '_full-page.png';
     }
 
     function getCroppedShotFileName (pageName, viewport, selectorName) {
@@ -33,7 +33,6 @@ module.exports = function(grunt) {
         grunt.log.ok('Saved screenshot: ' + fileName);
         callback();
       });
-
     }
 
     function cropScreenshot (selector, data, callback) {
@@ -90,12 +89,12 @@ module.exports = function(grunt) {
     mkdir: {
      'baseline-screens': {
         options: {
-          create: ['reporting/screenshots/baseline']
+          create: ['reporting/screenshots/baseline/originals']
         }
       },
       'latest-screens': {
         options: {
-          create: ['reporting/screenshots/latest']
+          create: ['reporting/screenshots/latest/originals']
         }
       },
       'diff-screens': {
@@ -131,12 +130,6 @@ module.exports = function(grunt) {
     },
     mochaTest: {
       'screen-diff': {
-        options: {
-          reporter: 'spec',
-          captureFile: 'reporting/screenshots/results.txt', // Optionally capture the reporter output to a file 
-          quiet: false, // Optionally suppress output to standard out (defaults to false) 
-          clearRequireCache: false // Optionally clear the require cache before running tests (defaults to false) 
-        },
         src: ['test/**/*.spec.js']
       }
     }
