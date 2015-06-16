@@ -36,7 +36,7 @@ Looper.prototype.foo = function () {
 Looper.loopWithCallback = function (array, action, data, finished) {
   var entry;
 
-  if (array.length === 0) {
+  if (typeof array === 'undefined' || array.length === 0) {
     finished();
   } else {
     entry = array[0];

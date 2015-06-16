@@ -40,7 +40,13 @@ describe('compare baseline screenshots to latest screenshots', function () {
       });
 
       it('matches the latest version of the screenshot', function (done) {
-        assertImagesAreEqual(baselineDir + '/' + fileName, latestDir + '/' + fileName, done);
+        var baselineImage = baselineDir + '/' + fileName,
+            latestImage = latestDir + '/' + fileName,
+            diffOptions = {
+              diffDirectory: 'reporting/screenshots/diffs'
+            };
+
+        assertImagesAreEqual(baselineImage, latestImage, diffOptions, done);
       });
 
     });
